@@ -1,32 +1,32 @@
 window.onload=function () {
 	//ÏÂÀ­²Ëµ¥
-	$().getClass('member').hover(function () {
+	$('.member').hover(function () {
 		$(this).css('background','url(images/arrow2.png) no-repeat 55px center');
-		$().getClass('ul').show();
+		$('ul').show();
 	},function () {
 		$(this).css('background','url(images/arrow.png) no-repeat 55px center');
-		$().getClass('ul').hide();		
+		$('.ul').hide();		
 	});
 	//µÇÂ¼¿ò
-	var login=$().getId('login');
-	var screen=$().getId('screen');
+	var login=$('#login');
+	var screen=$('#screen');
 	login.center(350,250).resize(function () {
 			if(login.css('display') == 'block') {
 				screen.lock();
 			};			
 	});
-	$().getClass('login','header').click(function () {
+	$('.login').click(function () {
 		login.css('display','block');
 		screen.lock();
 	});
-	$().getClass('close').click(function () {
+	$('.close').click(function () {
 		login.css('display','none');
 		screen.unlock();
 	});
 	
-	login.drag([$().getTag('h2').getElement(0)]);
+	login.drag([$('h2').getElement(0)]);
 	
-	
+
 	
 	
 

@@ -1,19 +1,31 @@
 ﻿
 //前台调用
-var $=function (_this) {
-	return new Base(_this);
+var $=function (args) {
+	return new Base(args);
 };
 //基础库 
-function Base (_this) {
+function Base (args) {
 	this.elements=[];
-	if(_this != undefined) {
-		this.elements[0]=_this;
+	if (typeof args == 'string') {
+		switch (args.charAt(0))  {
+			case '#' :
+				this.elements.push(this.getId(args.substring(1)));
+				break;
+			case '.' :
+				this.elements=this.getClass(args.substring(1));
+				break;
+			default :
+				this.elements = this.getTag(args);
+		}
+	} else if (typeof args == 'object') {
+		if (args != undefined) {
+			this.elements[0]=args;
+		}
 	}
 };
 //获取id节点数组	
 Base.prototype.getId=function (id) {
-		 this.elements.push(document.getElementById(id));
-		 return this;
+		 return document.getElementById(id);
 	};
 	
 Base.prototype.getName= function (name) {
@@ -24,29 +36,62 @@ Base.prototype.getName= function (name) {
 		return this;
 	};
 //获取元素节点数组		
-Base.prototype.getTag=function (tag) {
-		var tags=document.getElementsByTagName(tag);
+Base.prototype.getTag=function (tag,parentNode) {
+	var node = null;
+	var temps = [];
+	if (parentNode != undefined) {
+		node = parentNode;
+	} else {
+		node = document;
+	}
+		var tags=node.getElementsByTagName(tag);
 		for(var i=0;i<tags.length;i++){
-			this.elements.push(tags[i]);			
+			temps.push(tags[i]);			
 		}
-		return this;
+		return temps;
 	};	
 //获取class节点数组
-Base.prototype.getClass=function(className,idName) {
+Base.prototype.getClass=function(className,parentNode) {
 	var node=null;
-	if (arguments.length==2) {
-		node=document.getElementById(idName);
-	}else {
-		node=document;
+	var temps = [];
+	if (parentNode != undefined) {
+		node = parentNode;
+	} else {
+		node = document;
 	}
 	var all=node.getElementsByTagName('*');
 	for(var i=0;i<all.length;i++) {
-		if(all[i].className==className) {
-			this.elements.push(all[i]);
+		if(all[i].className == className) {
+			temps.push(all[i]);
 		}
 	}
+	return temps;
+}
+//设置css选择器子节点
+Base.prototype.find = function (str) {
+	var childElements = [];
+	for (var i = 0;i < this.elements.length; i++) {
+		switch (str.charAt(0)) {
+			case '#' :
+				childElements.push(this.getId(str.substring(1)));
+				break;
+			case '.' :
+				var temps = this.getClass(str.substring(1),this.elements[i]);
+				for (var j =0;j <temps.length; j++) {
+					childElements.push(temps[j]);
+				}
+				break;
+			default :
+				var temps = this.getTag(str,this.elements[i]);
+				for (var j =0;j <temps.length; j++) {
+					childElements.push(temps[j]);
+				}
+		}
+	}
+	this.elements = childElements;
 	return this;
 }
+	
 //获取某一个节点,返回这个节点对象
 Base.prototype.getElement = function (num) {
 	return this.elements[num];
@@ -201,6 +246,7 @@ Base.prototype.click=function (fn) {
 Base.prototype.extend = function (name,fn) {
 	Base.prototype[name] = fn;
 }
+
 
 
 
