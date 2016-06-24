@@ -1,4 +1,39 @@
-﻿//跨浏览器获取视口大小
+﻿//浏览器检测
+(function () {
+	window.sys = {};
+	var ua = navigator.userAgent.toLowerCase();
+	var s;	 
+	(s = ua.match(/opr\/([\d.]+)/)) ? sys.opera = s[1] :
+	(s =ua.match(/msie ([\d.]+)/)) ? sys.ie = s[1] :
+	(s =ua.match(/firefox\/([\d.]+)/)) ? sys.firefox = s[1] :
+	(s =ua.match(/chrome\/([\d.]+)/)) ? sys.chrome =s[1] :	
+	(s =ua.match(/version\/([\d.]+).*safari/)) ? sys.safari =s[1] : 0; 
+})();	
+//浏览器DOM加载
+function addDomLoaded (fn) {
+	var isReady = false;
+	var timer = null;
+	function doReady () {
+		if(isReady) return;
+		isReady = true;
+		if (timer) clearInterval(timer);
+		fn();
+	}
+	if (document.addEventListener) {
+		addEvent(document,'DOMContentLoaded',function() {
+			doReady();
+			removeEvent(document,'DOMContentLoaded',arguments.callee);
+		});
+	} else if (sys.ie && sys.ie < 9) {
+		timer =setInterval(function () {
+			try {
+				document.documentElement.doScroll('left');
+				doReady();
+			} catch (ex) {};
+		});
+	}
+}
+//跨浏览器获取视口大小
 function getInner () {
 	if (typeof window.innerWidth != 'undefined') {
 		return {
@@ -11,6 +46,16 @@ function getInner () {
 			height:document.documentElement.clientHeight
 		}
 	}
+}
+//跨浏览器获取style
+function getStyle(element,attr) {
+	var value;
+	if(typeof window.getComputedStyle != 'undefined') {
+		value =parseInt( window.getComputedStyle(element,null)[attr]);
+	}else if (typeof element.currentStyle != 'undefined'){
+		value =parseInt( element.currentStyle[attr]);
+	}
+	return value;
 }
 //IE常用的event对象配对到w3c中
 addEvent.fixEvent = function (event) {

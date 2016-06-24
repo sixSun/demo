@@ -7,21 +7,64 @@ var $=function (args) {
 function Base (args) {
 	this.elements=[];
 	if (typeof args == 'string') {
-		switch (args.charAt(0))  {
-			case '#' :
-				this.elements.push(this.getId(args.substring(1)));
-				break;
-			case '.' :
-				this.elements=this.getClass(args.substring(1));
-				break;
-			default :
-				this.elements = this.getTag(args);
+		if (args.indexOf(' ') != -1 ) {
+			var elements = args.split(' ');
+			var childElements = [];        		//存放临时节点对象的数组，解决覆盖问题
+			var node = [];							//存放父节点
+			for (var i = 0;i < elements.length;i++) {
+				if (node.length == 0) node.push(document);
+				switch (elements[i].charAt(0)) {
+					case '#' :
+						childElements =[];				//清理临时节点，令父节点失效
+						childElements.push(this.getId(elements[i].substring(1)));
+						node = childElements;					//保存父节点，因为childElements清理了，所以创建了node；
+						break;
+					case '.' :
+						childElements = [];
+						for (var j = 0;j < node.length;j++) {
+							var temps =this.getClass(elements[i].substring(1),node[j]);
+							for (var k=0;k<temps.length;k++) {
+								childElements.push(temps[k]);
+							}
+						}
+						node =childElements;
+						break;
+					default :
+						childElements = [];
+						for (var j =0;j<node.length;j++) {
+							var temps = this.getTag(elements[i],node[j]);
+							for (var k =0;k<temps.length;k++) {
+								childElements.push(temps[k]);
+							}
+						}
+						node =childElements;
+					}
+			}
+			this.elements = childElements;
+		} else {
+			//find模拟
+			switch (args.charAt(0))  {
+				case '#' :
+					this.elements.push(this.getId(args.substring(1)));
+					break;
+				case '.' :
+					this.elements=this.getClass(args.substring(1));
+					break;
+				default :
+					this.elements = this.getTag(args);
+			}
 		}
 	} else if (typeof args == 'object') {
 		if (args != undefined) {
 			this.elements[0]=args;
 		}
+	} else if (typeof args == 'function') {
+		this.ready(args);
 	}
+};
+//addDomLoaded
+Base.prototype.ready = function (fn) {
+	addDomLoaded(fn);
 };
 //获取id节点数组	
 Base.prototype.getId=function (id) {
@@ -93,10 +136,17 @@ Base.prototype.find = function (str) {
 }
 	
 //获取某一个节点,返回这个节点对象
-Base.prototype.getElement = function (num) {
+Base.prototype.ge = function (num) {
 	return this.elements[num];
 };
-
+//获取首个节点，并返回这个节点对象
+Base.prototype.first =function () {
+	return this.elements[0];
+};
+//获取末尾节点，并返回这个节点对象
+Base.prototype.last =function () {
+	return this.elements[this.elements.length - 1];
+};
 //获取某一个节点,返回Base对象
 Base.prototype.eq=function(num) {
 	var element=this.elements[num];
@@ -168,11 +218,7 @@ Base.prototype.removeRule=function(num,index){
 Base.prototype.css=function (attr,value) {
 	for(var i=0;i<this.elements.length;i++){
 		if(arguments.length==1) {
-			if(typeof window.getComputedStyle != 'undefined') {
-				return window.getComputedStyle(this.elements[i],null)[attr];
-			}else if (typeof this.elements[i].currentStyle != 'undefined'){
-				return this.elements[i].currentStyle[attr];
-			}
+		return getStyle(this.elements[i],attr)+'px';
 		}else {
 		this.elements[i].style[attr]=value;
 		}
@@ -242,6 +288,52 @@ Base.prototype.click=function (fn) {
 	}
 	return this;
 }
+//设置动画
+Base.prototype.animate = function (obj) {
+	for (var i=0;i<this.elements.length;i++) {
+		var element = this.elements[i];
+		var attr = obj['attr'] == 'x' ? 'left' :obj['attr'] == 'y' ? 'top' :
+						obj['attr'] == 'w' ? 'width' :obj['attr'] == 'h' ? 'height' : 'left';
+		var start = obj['start'] != undefined ?obj['start'] :getStyle(element,attr);
+		var t =obj['t'] != undefined ? obj['t']  : 30;
+		var step = obj['step'] !=undefined ? obj['step'] : 10;
+		var alter = obj['alter'];
+		var target = obj['target'];
+		var speed = obj['speed'] != undefined ? obj['speed'] : 6;
+		var type = obj['type'] ==0 ? 'constant' :obj['type'] ==1 ? 'buffer' : 'buffer';
+		
+		if(alter != undefined && target == undefined) {
+			target = alter +start;
+		} else if (alter == undefined && target == undefined) {
+			throw new Error('alter增量或target目标量必须有一个');
+		}
+		
+		if (start >target) step = -step;
+		element.style[attr] =start +'px';
+		clearInterval(window.timer);
+		timer = setInterval(function () {
+			if (type == 'buffer') {
+				step = (target - getStyle(element,attr)) / speed;
+				step = step >0 ? Math.ceil(step) : Math.floor(step);
+			}
+			if (step == 0 ) {
+				setTarget();
+			} else if (step > 0 && Math.abs(getStyle(element,attr) - target) <= step) {
+				setTarget();
+			} else if (step < 0 && (getStyle(element,attr) - target )<= Math.abs(step)) {
+				setTarget();
+			} else {
+					element.style[attr] = getStyle(element,attr) + step +'px';
+			}
+		},t);	
+		function setTarget(){
+			element.style[attr] = target +'px';
+			clearInterval(timer);
+		}
+	}
+	return this;
+}
+
 //设置插件入口
 Base.prototype.extend = function (name,fn) {
 	Base.prototype[name] = fn;
