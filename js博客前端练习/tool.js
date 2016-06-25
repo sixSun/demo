@@ -47,15 +47,20 @@ function getInner () {
 		}
 	}
 }
+//跨浏览器获取滚动条的位置
+function getScroll() {
+	return {
+		top : document.documentElement.scrollTop || document.body.scrollTop,
+		left : document.documentElement.scrollLeft || document.body.scrollLeft,		
+	}
+}
 //跨浏览器获取style
 function getStyle(element,attr) {
-	var value;
 	if(typeof window.getComputedStyle != 'undefined') {
-		value =parseInt( window.getComputedStyle(element,null)[attr]);
+		return window.getComputedStyle(element,null)[attr];
 	}else if (typeof element.currentStyle != 'undefined'){
-		value =parseInt( element.currentStyle[attr]);
+		return element.currentStyle[attr];
 	}
-	return value;
 }
 //IE常用的event对象配对到w3c中
 addEvent.fixEvent = function (event) {
