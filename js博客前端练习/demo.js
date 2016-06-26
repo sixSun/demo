@@ -1,5 +1,5 @@
 $( function () {
-	//下拉菜单
+	//个人中心
 	$('#header .member').hover(function () {
 		$(this).css('background','url(images/arrow2.png) no-repeat 55px center');
 		$('#header ul').show().animate({
@@ -80,7 +80,51 @@ $( function () {
 		});
 	});
 	
-	
+	//滑动导航
+	$('#nav .about li').hover(function(){
+		var target = $(this).first().offsetLeft;
+		$('#nav .nav_bg').animate({
+			attr : 'x',
+			target : target+20,
+			t:10,
+			step:15,
+			fn:function() {
+				$('#nav .white').animate({
+					attr :'x',
+					target : -target
+				});
+			}
+		});
+	},function(){
+		$('#nav .nav_bg').animate({
+			attr: 'x',
+			target:20,
+			t:10,
+			step:15,
+			fn : function () {
+				$('#nav .white').animate({
+					attr:'x',
+					target:0
+				});
+			}
+		})
+	});
+	//左侧菜单
+	$('#sidebar h2').toggle(function(){
+		$(this).next().animate({
+			mul:{
+				h:0,
+				o:0
+			}
+		});
+	},function(){
+		$(this).next().animate({
+			mul :{
+				h :150,
+				o :100				
+			}
+		});
+	})
 });
 
 

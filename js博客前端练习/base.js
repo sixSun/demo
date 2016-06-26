@@ -154,6 +154,25 @@ Base.prototype.eq=function(num) {
 	this.elements[0]=(element);
 	return this;
 	}
+	
+//获取当前同级节点的下一个元素节点 
+Base.prototype.next = function() { 
+		for (var i=0;i<this.elements.length;i++) { 
+			this.elements[i]=this.elements[i].nextSibling; 
+			if (this.elements[i]==null) throw newError('找不到下一个同级元素节点！');
+			if (this.elements[i].nodeType==3) this.next(); 
+	} 
+	return this; 
+}
+//获取当前同级节点的上一个元素节点 
+Base.prototype.prev = function() { 
+	for (var i=0;i<this.elements.length;i++){ 
+		this.elements[i]=this.elements[i].previousSibling; 
+		if (this.elements[i]==null) throw newError('找不到上一个同级元素节点！'); 
+		if (this.elements[i].nodeType==3)this.prev(); 
+	} 
+	return this;
+}
 //设置鼠标的移入移出
 Base.prototype.hover=function (over,out) {
 	for(var i=0;i<this.elements.length;i++) {
@@ -288,6 +307,19 @@ Base.prototype.click=function (fn) {
 		this.elements[i].onclick=fn;
 	}
 	return this;
+}
+//设置点击切换方法
+Base.prototype.toggle = function (){
+		for (var i=0;i<this.elements.length;i++) {
+		(function (element,args){
+			var count = 0;
+			addEvent(element,'click',function () {
+				args[count++ % args.length].call(element);
+			});
+		})(this.elements[i],arguments);	
+		
+		}
+		return this;
 }
 //设置动画
 Base.prototype.animate = function (obj) {
