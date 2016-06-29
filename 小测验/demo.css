@@ -1,0 +1,30 @@
+#color {
+	width: 200px;
+	height: 200px;
+	border: 1px solid #ccc;
+	position: relative;
+	
+}
+#color ul {
+	margin: 0;
+	padding: 10px 10px;
+	list-style: none inside none;
+
+}
+#color ul li {
+	float: left;
+	margin: 5px;
+	width:15px;
+	height:15px;
+	border-radius: 4px; 
+	border:1px solid #eee;
+}
+#color li.new-color{
+	position: relative;
+}
+#color li.new-color span{
+	position: absolute;
+	top: -10px;
+	right: 0;
+	cursor: pointer;
+}
